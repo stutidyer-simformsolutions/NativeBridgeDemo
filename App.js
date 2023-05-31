@@ -6,60 +6,60 @@
  * @flow strict-local
  */
 
-import React from 'react';
-import type {Node} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  NativeModules,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
-  View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
-/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
- * LTI update could not be added via codemod */
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
 
-const App: () => Node = () => {
+const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
+  const [appVersion, setAppVersion] = useState();
+  const [buildNumber, setBuildNumber] = useState();
+  const [bundleIdentifier, setBundleIdentifier] = useState();
+  const [systemVersion, setSystemVersion] = useState();
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  const {AppInfoModule} = NativeModules;
+
+  const getAppVersion = () => {
+    AppInfoModule?.getAppVersion()
+      .then(version => setAppVersion(version))
+      .catch(error => console.error('Error getting app version:', error));
+  };
+  const getBuildNumber = () => {
+    AppInfoModule?.getBuildNumber()
+      .then(res => setBuildNumber(res))
+      .catch(error => console.error('Error getting build number:', error));
+  };
+  const getBundleIdentifier = () => {
+    AppInfoModule?.getBundleIdentifier()
+      .then(res => setBundleIdentifier(res))
+      .catch(error => console.error('Error getting bundle identifier:', error));
+  };
+
+  const getSystemVersion = () => {
+    AppInfoModule?.getSystemVersion()
+      .then(res => setSystemVersion(res))
+      .catch(error => console.error('Error getting system version:', error));
+  };
+
+  useEffect(() => {
+    getAppVersion();
+    getBuildNumber();
+    getBundleIdentifier();
+    getSystemVersion();
+  }, []);
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -70,48 +70,28 @@ const App: () => Node = () => {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
+        <Text style={styles.titleStyle}>{`App Details`}</Text>
+        <Text style={styles.fontStyle}>{'App Version:- ' + appVersion}</Text>
+        <Text style={styles.fontStyle}>{'Build Number:- ' + buildNumber}</Text>
+        <Text style={styles.fontStyle}>
+          {'Bundle Identifier:- ' + bundleIdentifier}
+        </Text>
+        <Text style={styles.fontStyle}>
+          {'System Version:- ' + systemVersion}
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  titleStyle: {
+    fontSize: 20,
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  fontStyle: {
+    fontSize: 15,
+    lineHeight: 30,
   },
 });
-
 export default App;
